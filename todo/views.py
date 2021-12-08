@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
+from .forms import ToDoForm
 
 
 def homepage(request):
@@ -43,8 +44,19 @@ def logoutuser(request):
         return redirect('homepage')
 
 
+def createtodo(request):
+    if request.method == 'GET':
+        return render(request, 'todo/createtodo.html', {'form': ToDoForm()})
+    else:
+        try:
+            form = ToDoForm(request.POST)
+            new_todo = form.save(commit=False)
+            new_todo.user = request.user
+            new_todo.save()
+            return redirect('currenttodos')
+        except ValueError:
+            return render(request, 'todo/createtodo.html', {'form': ToDoForm(), 'error': 'Bad data passed in. Try again'})
+
 
 def currenttodos(request):
     return render(request, 'todo/currentodos.html')
-
-
